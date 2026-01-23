@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aryaduta AI — Light Login + Chat UI</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* Light + clean */
+      --bg0:#F7F9FF;
+      --bg1:#FFFFFF;
+
+      --fg:#0B1020;
+      --muted:rgba(11,16,32,.64);
+      --line:rgba(11,16,32,.10);
+
+      /* “Liquid glass” in light theme */
+      --glass:rgba(255,255,255,.62);
+      --glass2:rgba(255,255,255,.44);
+
+      --accent:#6D5BFF;   /* violet */
+      --accent2:#1FB7FF;  /* cyan */
+      --accent3:#32E6B1;  /* mint */
+
+      --shadow: 0 18px 60px rgba(11,16,32,.10);
+      --shadow2: 0 10px 30px rgba(11,16,32,.08);
+
+      --radius: 20px;
+      --radius2: 16px;
+
+      --sidebarW: 320px;
+      --topbarH: 64px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family:"Plus Jakarta Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--fg);
+      background:
+        radial-gradient(900px 700px at 15% 5%, rgba(109,91,255,.16), transparent 58%),
+        radial-gradient(800px 650px at 88% 10%, rgba(31,183,255,.12), transparent 58%),
+        radial-gradient(900px 700px at 70% 92%, rgba(50,230,177,.10), transparent 62%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
+    }
+
+    /* Subtle light blobs */
+    .blob{
+      position:fixed;
+      width:520px; height:520px;
+      border-radius:50%;
+      filter: blur(40px);
+      opacity:.55;
+      pointer-events:none;
+      z-index:0;
+      animation: float 12s ease-in-out infinite;
+    }
+    .b1{
+      left:-180px; top:120px;
+      background: radial-gradient(circle at 30% 30%, rgba(109,91,255,.55), transparent 60%),
+                  radial-gradient(circle at 70% 70%, rgba(31,183,255,.40), transparent 60%);
+      animation-duration: 13s;
+    }
+    .b2{
+      right:-240px; top:40px;
+      width:640px; height:640px;
+      background: radial-gradient(circle at 40% 40%, rgba(31,183,255,.50), transparent 60%),
+                  radial-gradient(circle at 70% 70%, rgba(50,230,177,.32), transparent 60%);
+      animation-duration: 15s;
+      animation-delay: -3s;
+    }
+    .b3{
+      left:35%; bottom:-340px;
+      width:780px; height:780px;
+      background: radial-gradient(circle at 35% 35%, rgba(50,230,177,.30), transparent 62%),
+                  radial-gradient(circle at 70% 70%, rgba(109,91,255,.30), transparent 62%);
+      animation-duration: 17s;
+      animation-delay: -6s;
+    }
+    @keyframes float{
+      0%,100%{ transform: translate3d(0,0,0) scale(1); }
+      50%{ transform: translate3d(0,-24px,0) scale(1.04); }
+    }
+
+    /* Glass panels */
+    .glass{
+      background: linear-gradient(180deg, var(--glass), rgba(255,255,255,.35));
+      border: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+    .glassFlat{
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(11,16,32,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow2);
+      border-radius: var(--radius2);
+    }
+
+    /* App wrapper */
+    .app{
+      position:relative;
+      z-index:1;
+      height:100%;
+      padding: 18px;
+      display:grid;
+      place-items:center;
+    }
+    .frame{
+      width:min(1180px, 100%);
+      height:min(760px, calc(100vh - 36px));
+      display:grid;
+      place-items:center;
+    }
+
+    /* Brand mark */
+    .mark{
+      width:42px; height:42px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%),
+        linear-gradient(135deg, rgba(109,91,255,.90), rgba(31,183,255,.70));
+      border: 1px solid rgba(11,16,32,.10);
+      box-shadow: 0 12px 26px rgba(109,91,255,.14);
+      position:relative;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .mark:after{
+      content:"";
+      position:absolute;
+      inset:-45%;
+      background: conic-gradient(from 180deg, rgba(255,255,255,0), rgba(255,255,255,.50), rgba(255,255,255,0));
+      animation: sheen 5.2s linear infinite;
+      opacity:.6;
+    }
+    @keyframes sheen{ to{ transform: rotate(360deg);} }
+
+    .dot{
+      width:8px; height:8px; border-radius:50%;
+      background: linear-gradient(135deg, var(--accent2), var(--accent3));
+      box-shadow: 0 0 0 4px rgba(31,183,255,.12);
+    }
+
+    /* Buttons + Inputs */
+    .btn{
+      border: 1px solid rgba(11,16,32,.12);
+      background: rgba(255,255,255,.55);
+      color: var(--fg);
+      padding: 11px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight:800;
+      cursor:pointer;
+      transition: .18s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.75); }
+    .btn:active{ transform: translateY(0px); }
+    .btn.primary{
+      border-color: rgba(109,91,255,.28);
+      background: linear-gradient(135deg, rgba(109,91,255,.92), rgba(31,183,255,.72));
+      color: #081021;
+      box-shadow: 0 14px 30px rgba(31,183,255,.12);
+    }
+    .btn.icon{
+      padding: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+    }
+
+    input, textarea{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid rgba(11,16,32,.12);
+      background: rgba(255,255,255,.60);
+      color: var(--fg);
+      padding: 12px 12px;
+      font-size: 14px;
+      outline:none;
+      transition:.18s ease;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(31,183,255,.40);
+      box-shadow: 0 0 0 6px rgba(31,183,255,.12);
+      background: rgba(255,255,255,.78);
+    }
+    ::placeholder{ color: rgba(11,16,32,.45); font-weight:700; }
+
+    .hint{
+      font-size: 12px;
+      color: rgba(11,16,32,.60);
+      line-height: 1.4;
+    }
+    .err{
+      display:none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(220,38,38,.25);
+      background: rgba(220,38,38,.08);
+      color: rgba(153,27,27,.95);
+      font-size: 12px;
+      font-weight:800;
+    }
+
+    /* ============ LOGIN VIEW ============ */
+    #loginView{
+      width:min(980px, 100%);
+      height:min(640px, calc(100vh - 54px));
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .loginLeft{
+      padding: 26px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap: 12px;
+    }
+    .brandRow{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom: 6px;
+    }
+    .brandText .t1{
+      margin:0;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      line-height:1.05;
+    }
+    .brandText .t2{
+      margin:2px 0 0;
+      font-size: 12px;
+      color: rgba(11,16,32,.62);
+      font-weight:800;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      width:fit-content;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(11,16,32,.10);
+      background: rgba(255,255,255,.55);
+      font-size: 12px;
+      font-weight:900;
+      color: rgba(11,16,32,.78);
+    }
+    .loginLeft h2{
+      margin: 2px 0 0;
+      font-size: clamp(26px, 3vw, 38px);
+      letter-spacing:-.6px;
+      line-height: 1.05;
+    }
+    .loginLeft p{
+      margin:0;
+      color: rgba(11,16,32,.66);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 52ch;
+    }
+
+    .loginRight{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap: 10px;
+    }
+    .card{
+      padding: 18px;
+    }
+    .card h3{
+      margin:0 0 10px;
+      font-size: 14px;
+      letter-spacing:.2px;
+      font-weight: 900;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom: 12px;
+    }
+    label{
+      font-size:12px;
+      font-weight:900;
+      color: rgba(11,16,32,.72);
+      letter-spacing:.2px;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .link{
+      color: rgba(11,16,32,.72);
+      font-size: 12px;
+      font-weight:900;
+      text-decoration:none;
+      border-bottom: 1px dashed rgba(11,16,32,.30);
+      padding-bottom:2px;
+    }
+    .link:hover{ color: rgba(11,16,32,.92); border-bottom-color: rgba(11,16,32,.55); }
+
+    /* ============ CHAT VIEW ============ */
+    #chatView{
+      width:min(1180px, 100%);
+      height:min(760px, calc(100vh - 36px));
+      display:none; /* shown after login */
+      grid-template-columns: var(--sidebarW) 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .sidebar{
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .sideTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .sideBrand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .sideBrand .t1{
+      margin:0;
+      font-size: 13px;
+      font-weight: 1000;
+      line-height:1.05;
+    }
+    .sideBrand .t2{
+      margin:2px 0 0;
+      font-size: 12px;
+      color: rgba(11,16,32,.62);
+      font-weight:900;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .search{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .search input{
+      border:none;
+      background: transparent;
+      padding:0;
+      font-size: 13px;
+      font-weight: 900;
+      outline:none;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      width:fit-content;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(11,16,32,.10);
+      background: rgba(255,255,255,.55);
+      font-size: 12px;
+      font-weight:1000;
+      color: rgba(11,16,32,.78);
+    }
+
+    .threads{
+      overflow:auto;
+      padding-right: 6px;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+    .thread{
+      padding: 12px;
+      border-radius: 18px;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .thread:hover{ transform: translateY(-1px); }
+    .thread.active{
+      border-color: rgba(31,183,255,.40);
+      box-shadow: 0 0 0 6px rgba(31,183,255,.12);
+    }
+    .thread .title{ margin:0 0 2px; font-size: 13px; font-weight: 1000; }
+    .thread .meta{ margin:0; font-size: 12px; color: rgba(11,16,32,.62); font-weight: 900; }
+
+    .main{
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .topbar{
+      height: var(--topbarH);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .titleRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .titleRow .name{
+      margin:0;
+      font-size: 13px;
+      font-weight: 1100;
+      line-height:1.05;
+    }
+    .titleRow .sub{
+      margin:2px 0 0;
+      font-size: 12px;
+      color: rgba(11,16,32,.62);
+      font-weight: 900;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: 52ch;
+    }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .msgs{
+      flex:1;
+      overflow:auto;
+      padding: 6px 6px 2px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .msgWrap{
+      display:flex;
+      gap: 10px;
+      align-items:flex-end;
+    }
+    .msgWrap.user{ justify-content:flex-end; }
+    .avatar{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid rgba(11,16,32,.10);
+      background: rgba(255,255,255,.55);
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .avatar.ai{
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%),
+        linear-gradient(135deg, rgba(109,91,255,.25), rgba(31,183,255,.16));
+    }
+    .avatar.user{
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%),
+        linear-gradient(135deg, rgba(50,230,177,.18), rgba(31,183,255,.10));
+    }
+
+    .bubble{
+      max-width: min(78%, 680px);
+      padding: 12px 12px;
+      border-radius: 18px;
+      line-height: 1.55;
+      font-size: 13px;
+      font-weight:700;
+      color: rgba(11,16,32,.92);
+    }
+    .bubble.ai{
+      background: rgba(255,255,255,.62);
+      border: 1px solid rgba(11,16,32,.10);
+      box-shadow: 0 10px 22px rgba(11,16,32,.06);
+    }
+    .bubble.user{
+      background: linear-gradient(135deg, rgba(109,91,255,.22), rgba(31,183,255,.14));
+      border: 1px solid rgba(11,16,32,.10);
+      box-shadow: 0 10px 22px rgba(11,16,32,.06);
+    }
+    .bubble .meta{
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight:900;
+      color: rgba(11,16,32,.55);
+      display:flex;
+      align-items:center;
+      gap: 8px;
+    }
+
+    .composer{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin-top: 10px;
+    }
+    .composerInner{
+      flex:1;
+      display:flex;
+      gap: 10px;
+      align-items:flex-end;
+      padding: 10px;
+    }
+    textarea{
+      resize:none;
+      min-height: 44px;
+      max-height: 160px;
+      line-height: 1.4;
+      font-weight:800;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      #loginView{ grid-template-columns: 1fr; height:auto; }
+      #chatView{ grid-template-columns: 1fr; height:auto; }
+      .sidebar{ display:none; }
+      .frame{ height:auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="app">
+    <div class="frame">
+
+      <!-- LOGIN VIEW -->
+      <section id="loginView">
+        <div class="loginLeft glass">
+          <div class="brandRow">
+            <div class="mark" aria-hidden="true"></div>
+            <div class="brandText">
+              <p class="t1">Aryaduta <strong>AI</strong></p>
+              <p class="t2">Clean light glass UI</p>
+            </div>
+          </div>
+
+          <div class="badge"><span class="dot" aria-hidden="true"></span> Light • Clean • Glass</div>
+
+          <h2>Sign in.</h2>
+          <p>
+            Mock login: type any email/username and use password <strong>1234</strong> to enter the chat UI.
+          </p>
+          <p class="hint">This is only a front-end demo (no real authentication).</p>
+        </div>
+
+        <div class="loginRight glass">
+          <div class="card glassFlat">
+            <h3>Welcome back</h3>
+
+            <div class="field">
+              <label for="email">Email / Username</label>
+              <input id="email" type="text" placeholder="anything" autocomplete="username" />
+            </div>
+
+            <div class="field">
+              <label for="pass">Password</label>
+              <input id="pass" type="password" placeholder="1234" autocomplete="current-password" />
+              <div class="hint">Hint: password is <strong>1234</strong></div>
+            </div>
+
+            <div class="row">
+              <a class="link" href="#" onclick="return false;">Forgot password</a>
+              <button class="btn primary" id="btnLogin" type="button">Sign In</button>
+            </div>
+
+            <div class="err" id="err">Incorrect password. Use <strong>1234</strong>.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAT VIEW -->
+      <section id="chatView">
+        <aside class="sidebar glass">
+          <div class="sideTop">
+            <div class="sideBrand">
+              <div class="mark" style="width:34px;height:34px;border-radius:14px;" aria-hidden="true"></div>
+              <div style="min-width:0;">
+                <p class="t1">Aryaduta AI</p>
+                <p class="t2">Internal assistant</p>
+              </div>
+            </div>
+            <button class="btn icon" id="btnNew" title="New chat" type="button">+</button>
+          </div>
+
+          <div class="search glassFlat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" opacity=".8"/>
+              <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+            </svg>
+            <input id="search" placeholder="Search sessions..." />
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 8px;">
+            <div class="pill"><span class="dot" aria-hidden="true"></span> Sessions</div>
+            <button class="btn" id="btnClear" type="button">Clear</button>
+          </div>
+
+          <div class="threads" id="threads">
+            <div class="thread glassFlat active" data-id="0">
+              <p class="title">Daily Brief</p>
+              <p class="meta">Pickup • Pace • Risks</p>
+            </div>
+            <div class="thread glassFlat" data-id="1">
+              <p class="title">Rate Guidance</p>
+              <p class="meta">BAR ladder • Promo</p>
+            </div>
+            <div class="thread glassFlat" data-id="2">
+              <p class="title">Sales Support</p>
+              <p class="meta">Displacement • Bids</p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main glass">
+          <div class="topbar glassFlat">
+            <div class="titleRow">
+              <div class="mark" style="width:34px;height:34px;border-radius:14px;" aria-hidden="true"></div>
+              <div style="min-width:0;">
+                <p class="name" id="chatTitle">Aryaduta AI</p>
+                <p class="sub" id="chatSubtitle">Ask about forecast, pickup, ADR, segmentation…</p>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn" id="btnLogout" type="button">Logout</button>
+            </div>
+          </div>
+
+          <section class="msgs" id="msgs" aria-label="Chat messages">
+            <div class="msgWrap">
+              <div class="avatar ai" aria-hidden="true"><span class="dot"></span></div>
+              <div class="bubble ai">
+                Hi — I’m Aryaduta AI. What would you like to analyze today?
+                <div class="meta"><span>AI</span><span>•</span><span>just now</span></div>
+              </div>
+            </div>
+          </section>
+
+          <footer class="composer">
+            <div class="composerInner glassFlat">
+              <textarea id="input" placeholder="Message Aryaduta AI… (Enter to send, Shift+Enter for new line)"></textarea>
+              <button class="btn primary" id="btnSend" type="button">Send</button>
+            </div>
+          </footer>
+        </main>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    // Views
+    const loginView = document.getElementById("loginView");
+    const chatView  = document.getElementById("chatView");
+
+    // Login controls
+    const email = document.getElementById("email");
+    const pass  = document.getElementById("pass");
+    const btnLogin = document.getElementById("btnLogin");
+    const err = document.getElementById("err");
+
+    function goChat(){
+      loginView.style.display = "none";
+      chatView.style.display = "grid";
+      err.style.display = "none";
+      document.getElementById("input").focus();
+    }
+    function goLogin(){
+      chatView.style.display = "none";
+      loginView.style.display = "grid";
+      pass.value = "";
+      err.style.display = "none";
+      email.focus();
+    }
+
+    function tryLogin(){
+      const user = (email.value || "").trim();
+      const pw = (pass.value || "").trim();
+
+      // Requirement: "whatever text" in username is fine, password must be 1234
+      if(pw === "1234" && user.length > 0){
+        goChat();
+      } else {
+        err.style.display = "block";
+      }
+    }
+
+    btnLogin.addEventListener("click", tryLogin);
+    [email, pass].forEach(el=>{
+      el.addEventListener("keydown", (e)=>{
+        if(e.key === "Enter"){
+          e.preventDefault();
+          tryLogin();
+        }
+      });
+    });
+
+    // Chat controls
+    const msgs = document.getElementById("msgs");
+    const input = document.getElementById("input");
+    const btnSend = document.getElementById("btnSend");
+    const btnLogout = document.getElementById("btnLogout");
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, (m)=>({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    function addMessage(text, who){
+      const wrap = document.createElement("div");
+      wrap.className = "msgWrap" + (who === "user" ? " user" : "");
+      if(who === "user"){
+        wrap.innerHTML = `
+          <div class="bubble user">
+            ${escapeHtml(text).replace(/\\n/g,"<br>")}
+            <div class="meta"><span>You</span><span>•</span><span>just now</span></div>
+          </div>
+          <div class="avatar user" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" stroke-width="2" opacity=".8"/>
+              <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+            </svg>
+          </div>
+        `;
+      } else {
+        wrap.innerHTML = `
+          <div class="avatar ai" aria-hidden="true"><span class="dot"></span></div>
+          <div class="bubble ai">
+            ${escapeHtml(text).replace(/\\n/g,"<br>")}
+            <div class="meta"><span>AI</span><span>•</span><span>just now</span></div>
+          </div>
+        `;
+      }
+      msgs.appendChild(wrap);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function send(){
+      const t = input.value.trim();
+      if(!t) return;
+      addMessage(t, "user");
+      input.value = "";
+      input.style.height = "44px";
+
+      // mock response
+      setTimeout(()=>{
+        addMessage("Mock reply: I can help with analysis, summaries, and recommendations. (Wire me to real data next.)", "ai");
+      }, 450);
+    }
+
+    btnSend.addEventListener("click", send);
+    input.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" && !e.shiftKey){
+        e.preventDefault();
+        send();
+      }
+    });
+
+    input.addEventListener("input", ()=>{
+      input.style.height = "44px";
+      input.style.height = Math.min(input.scrollHeight, 160) + "px";
+    });
+
+    btnLogout.addEventListener("click", goLogin);
+
+    // initial focus
+    email.focus();
+  </script>
+</body>
+</html>
