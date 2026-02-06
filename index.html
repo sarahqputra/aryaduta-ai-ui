@@ -3,139 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aryaduta Revenue | Pastel Glass Dashboard</title>
+    <title>Aryaduta Group | Revenue Scorecard Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.45);
-            --pastel-blue: #e0f2fe;
-            --pastel-pink: #fdf2f8;
-            --pastel-purple: #f5f3ff;
+            --glass: rgba(255, 255, 255, 0.55);
+            --p-blue: #eff6ff;
+            --p-purple: #f5f3ff;
+            --p-pink: #fff1f2;
+            --p-mint: #f0fdf4;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(120deg, var(--pastel-blue) 0%, var(--pastel-purple) 50%, var(--pastel-pink) 100%);
+            background: linear-gradient(135deg, var(--p-blue) 0%, var(--p-purple) 35%, var(--p-pink) 70%, var(--p-mint) 100%);
             background-attachment: fixed;
-            min-height: 100vh;
             color: #334155;
+            min-height: 100vh;
+            margin: 0;
         }
 
-        .glass-card {
-            background: var(--glass-bg);
+        .glass-panel {
+            background: var(--glass);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
         }
 
-        /* --- FREEZE PANE LOGIC --- */
+        /* --- FREEZE PANE STYLES --- */
         .table-container {
-            max-height: 75vh;
+            max-height: 72vh;
             overflow: auto;
             border-radius: 24px;
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        /* Freeze Header Row */
+        table { border-collapse: separate; border-spacing: 0; width: 100%; }
+
+        /* Freeze the Header */
         thead th {
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid #f1f5f9;
         }
 
-        /* Freeze First Column (Metrics) */
+        /* Freeze the First Column (Metric Name) */
         .sticky-col {
             position: sticky;
             left: 0;
             z-index: 40;
-            background: rgba(255, 255, 255, 0.9) !important;
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(8px);
+            border-right: 1px solid #f1f5f9;
         }
 
-        /* Ensure Header + First Column intersection is highest z-index */
+        /* Fix the Top-Left Corner overlap */
         thead th:first-child {
             z-index: 60;
-            left: 0;
         }
+
+        .filter-select {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-select:hover { background: white; border-color: #3b82f6; }
 
         .grade-pill {
             padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.65rem;
+            text-transform: uppercase;
         }
         .grade-A { background: #dcfce7; color: #166534; }
         .grade-B { background: #e0f2fe; color: #0369a1; }
         .grade-C { background: #fef3c7; color: #92400e; }
         .grade-D { background: #fee2e2; color: #991b1b; }
 
-        tr:hover td { background: rgba(255, 255, 255, 0.6) !important; }
-        
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        tr:hover td { background: rgba(255, 255, 255, 0.8) !important; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
     </style>
 </head>
-<body class="p-6 lg:p-12">
+<body class="p-6 lg:p-10">
 
-    <div class="max-w-[1500px] mx-auto mb-10 flex flex-col md:flex-row justify-between items-end">
-        <div class="space-y-1">
-            <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Balance Scorecard</h1>
-            <p class="text-slate-500 font-medium">Aryaduta Hotel Group Executive View</p>
+    <header class="max-w-[1600px] mx-auto mb-8 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Aryaduta Revenue Strategy</h1>
+            <p class="text-slate-500 font-semibold tracking-wide">Executive Scorecard 2026</p>
         </div>
-        <div class="flex gap-4 mt-6 md:mt-0">
-            <div class="glass-card p-1.5 rounded-2xl flex">
-                <button onclick="toggleView('consolidated')" id="btn-cons" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-blue-600 shadow-sm">Group Ranking</button>
-                <button onclick="toggleView('individual')" id="btn-ind" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-800">Hotel Details</button>
+
+        <div class="glass-panel p-2.5 rounded-2xl flex flex-wrap items-center gap-3">
+            <select class="filter-select"><option>2026</option><option>2025</option></select>
+            <select class="filter-select">
+                <option>January</option><option>February</option><option>March</option>
+            </select>
+            <select class="filter-select">
+                <option>Week 1</option><option>Week 2</option><option>Week 3</option><option>Week 4</option><option>Week 5</option>
+            </select>
+            <div class="h-6 w-px bg-slate-300 mx-2 hidden md:block"></div>
+            <div class="flex bg-white/40 p-1 rounded-xl">
+                <button onclick="toggleView('consolidated')" id="btn-cons" class="px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 shadow-sm transition">Group Overview</button>
+                <button onclick="toggleView('individual')" id="btn-ind" class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 transition">Hotel Drill-down</button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <main class="max-w-[1500px] mx-auto">
+    <main class="max-w-[1600px] mx-auto">
         
-        <div id="view-consolidated" class="animate-in fade-in duration-700">
-            <div class="glass-card rounded-[32px] overflow-hidden">
+        <div id="view-consolidated">
+            <div class="glass-panel rounded-[32px] overflow-hidden">
                 <div class="table-container">
-                    <table class="w-full text-left border-collapse">
+                    <table>
                         <thead>
-                            <tr class="text-slate-400 text-[11px] uppercase tracking-[0.1em]">
-                                <th class="p-6 pl-10">Rank</th>
-                                <th class="p-6">Property</th>
-                                <th class="p-6">Occupancy</th>
-                                <th class="p-6">ADR</th>
-                                <th class="p-6">RevPAR</th>
-                                <th class="p-6">Total Rev</th>
+                            <tr class="text-slate-400 text-[10px] font-black uppercase tracking-[0.15em]">
+                                <th class="p-6 pl-10 sticky-col">Rank & Property Name</th>
+                                <th class="p-6 text-center">Occ %</th>
+                                <th class="p-6 text-center">ADR</th>
+                                <th class="p-6 text-center">RevPAR</th>
+                                <th class="p-6 text-center">Total Revenue</th>
+                                <th class="p-6 text-center">RGI Index</th>
                                 <th class="p-6 text-center">Score</th>
-                                <th class="p-6 text-center">Grade</th>
-                                <th class="p-6 text-right pr-10">Details</th>
+                                <th class="p-6 text-center pr-10">Grade</th>
                             </tr>
                         </thead>
-                        <tbody id="ranking-table" class="divide-y divide-white/20">
-                            </tbody>
+                        <tbody id="ranking-body" class="divide-y divide-white/20"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <div id="view-individual" class="hidden space-y-6">
-            <div class="flex items-center gap-6 mb-2">
-                <button onclick="toggleView('consolidated')" class="glass-card w-12 h-12 rounded-2xl flex items-center justify-center hover:scale-105 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        <div id="view-individual" class="hidden">
+            <div class="flex items-center gap-6 mb-6">
+                <button onclick="toggleView('consolidated')" class="glass-panel w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-white transition">
+                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
                 </button>
-                <h2 id="active-hotel-name" class="text-3xl font-bold text-slate-800">Hotel Name</h2>
-                <div id="active-hotel-grade" class="grade-pill grade-A text-base px-5 py-1.5">Grade A</div>
+                <div>
+                    <h2 id="active-hotel-name" class="text-3xl font-bold text-slate-800">Aryaduta Menteng</h2>
+                    <p class="text-sm font-bold text-blue-500 uppercase tracking-widest mt-1">Full Performance Audit</p>
+                </div>
+                <div id="active-hotel-grade" class="grade-pill grade-A text-sm px-6 py-2 ml-auto shadow-sm">Grade A</div>
             </div>
 
-            <div class="glass-card rounded-[32px] overflow-hidden">
+            <div class="glass-panel rounded-[32px] overflow-hidden">
                 <div class="table-container">
-                    <table class="w-full text-sm text-left border-collapse">
+                    <table class="text-sm">
                         <thead>
-                            <tr class="bg-white/40 text-slate-500 text-[11px] uppercase tracking-widest">
-                                <th class="p-5 pl-8 sticky-col">Metric Name</th>
+                            <tr class="bg-white/50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                                <th class="p-5 pl-10 sticky-col">Detailed Metric Name</th>
                                 <th class="p-5 text-center">Actual MTD</th>
                                 <th class="p-5 text-center">SPLY MTD</th>
                                 <th class="p-5 text-center">ACT + OTB</th>
@@ -146,8 +173,7 @@
                                 <th class="p-5 text-right pr-10">Score</th>
                             </tr>
                         </thead>
-                        <tbody id="scorecard-content" class="divide-y divide-white/20">
-                            </tbody>
+                        <tbody id="scorecard-body" class="divide-y divide-white/20"></tbody>
                     </table>
                 </div>
             </div>
@@ -155,85 +181,86 @@
     </main>
 
     <script>
-        const hotelList = [
-            { name: "Aryaduta Menteng", score: 94, occ: "82.1%", adr: "985", revpar: "808", rev: "14.2B", grade: "A" },
-            { name: "Aryaduta Bali", score: 89, occ: "88.4%", adr: "1,420", revpar: "1,255", rev: "18.5B", grade: "B" },
-            { name: "Aryaduta Suites Semanggi", score: 86, occ: "75.0%", adr: "1,150", revpar: "862", rev: "11.1B", grade: "B" },
-            { name: "Aryaduta Bandung", score: 82, occ: "78.2%", adr: "940", revpar: "735", rev: "9.4B", grade: "B" },
-            { name: "Aryaduta Lippo Village", score: 79, occ: "71.5%", adr: "880", revpar: "629", rev: "8.1B", grade: "C" },
-            { name: "Aryaduta Medan", score: 76, occ: "68.9%", adr: "820", revpar: "565", rev: "7.2B", grade: "C" },
-            { name: "Aryaduta Palembang", score: 74, occ: "65.4%", adr: "760", revpar: "497", rev: "5.8B", grade: "C" },
-            { name: "Aryaduta Makassar", score: 71, occ: "64.2%", adr: "710", revpar: "455", rev: "5.1B", grade: "C" },
-            { name: "Aryaduta Pekanbaru", score: 68, occ: "59.1%", adr: "690", revpar: "407", rev: "4.4B", grade: "D" },
-            { name: "Aryaduta Manado", score: 62, occ: "52.4%", adr: "640", revpar: "335", rev: "3.9B", grade: "D" }
+        // Real Aryaduta Hotel List
+        const hotels = [
+            { name: "Aryaduta Menteng", score: 94, occ: "82%", adr: "980k", rvp: "803k", rev: "14.2B", rgi: "1.15", grade: "A" },
+            { name: "Aryaduta Bali", score: 89, occ: "88%", adr: "1.4M", rvp: "1.2M", rev: "18.5B", rgi: "1.08", grade: "B" },
+            { name: "Aryaduta Suites Semanggi", score: 86, occ: "75%", adr: "1.1M", rvp: "860k", rev: "11.1B", rgi: "1.12", grade: "B" },
+            { name: "Aryaduta Bandung", score: 82, occ: "78%", adr: "940k", rvp: "733k", rev: "9.4B", rgi: "1.05", grade: "B" },
+            { name: "Aryaduta Lippo Village", score: 79, occ: "71%", adr: "880k", rvp: "625k", rev: "8.1B", rgi: "0.98", grade: "C" },
+            { name: "Aryaduta Medan", score: 76, occ: "68%", adr: "820k", rvp: "557k", rev: "7.2B", rgi: "1.02", grade: "C" },
+            { name: "Aryaduta Palembang", score: 74, occ: "65%", adr: "760k", rvp: "494k", rev: "5.8B", rgi: "1.01", grade: "C" },
+            { name: "Aryaduta Makassar", score: 71, occ: "64%", adr: "710k", rvp: "454k", rev: "5.1B", rgi: "0.95", grade: "C" },
+            { name: "Aryaduta Pekanbaru", score: 68, occ: "59%", adr: "690k", rvp: "407k", rev: "4.4B", rgi: "0.89", grade: "D" },
+            { name: "Aryaduta Manado", score: 62, occ: "52%", adr: "640k", rvp: "332k", rev: "3.9B", rgi: "0.85", grade: "D" }
         ];
 
-        const metricsData = [
-            { category: "Rooms Department", type: "head" },
-            { label: "Occupancy", vals: ["78.2%", "72.1%", "75.4%", "70.2%", "77.1%", "76.0%", "75.0%", "104%"] },
-            { label: "ADR", vals: ["950k", "910k", "945k", "890k", "955k", "940k", "930k", "102%"] },
-            { label: "RevPAR", vals: ["743k", "656k", "712k", "624k", "736k", "714k", "697k", "106%"] },
-            { label: "Room Revenue", vals: ["8.2B", "7.1B", "8.0B", "7.0B", "8.1B", "7.9B", "7.8B", "103%"] },
-            { label: "Group Business Share", vals: ["12%", "15%", "13%", "14%", "12%", "12%", "10%", "120%"] },
-            { label: "Direct Segment", vals: ["24%", "20%", "23%", "19%", "25%", "24%", "22%", "109%"] },
-            { label: "MPI Index", vals: ["1.05", "1.02", "1.04", "1.01", "1.05", "1.05", "1.03", "102%"] },
-            { label: "ARI Index", vals: ["1.12", "1.08", "1.10", "1.05", "1.11", "1.10", "1.09", "103%"] },
-            { label: "RGI Index", vals: ["1.18", "1.10", "1.15", "1.07", "1.17", "1.16", "1.12", "105%"] },
-            { category: "Food & Beverage", type: "head" },
-            { label: "Outlet Revenue", vals: ["3.1B", "2.8B", "3.0B", "2.7B", "3.2B", "3.0B", "2.9B", "107%"] },
-            { label: "Banquet Revenue", vals: ["1.1B", "1.3B", "1.2B", "1.4B", "1.1B", "1.2B", "1.2B", "92%"] },
-            { category: "Company Overall", type: "head" },
-            { label: "Total Revenue", vals: ["12.4B", "11.2B", "12.2B", "11.1B", "12.4B", "12.1B", "11.9B", "104%"] },
-            { label: "Forecast Accuracy", vals: ["96.5%", "94.2%", "96.0%", "93.1%", "97.0%", "96.5%", "95.0%", "98%"] }
+        const metrics = [
+            { cat: "Rooms Department", type: "h" },
+            { label: "Occupancy", data: ["78.2%", "72.1%", "75.4%", "70.2%", "77.1%", "76.0%", "75.0%", "104%"] },
+            { label: "ADR", data: ["950,200", "910,000", "945,000", "890,000", "955,000", "940,000", "930,000", "102%"] },
+            { label: "RevPAR", data: ["743,000", "656,000", "712,000", "624,000", "736,000", "714,000", "697,000", "106%"] },
+            { label: "Room Revenue", data: ["8.2B", "7.1B", "8.0B", "7.0B", "8.1B", "7.9B", "7.8B", "103%"] },
+            { label: "Group Business Share", data: ["12%", "15%", "13%", "14%", "12%", "12%", "10%", "120%"] },
+            { label: "Direct Segment", data: ["24%", "20%", "23%", "19%", "25%", "24%", "22%", "109%"] },
+            { label: "Digital Mix Share %", data: ["38%", "35%", "37%", "34%", "38%", "38%", "36%", "105%"] },
+            { label: "MPI Index", data: ["1.05", "1.02", "1.04", "1.01", "1.05", "1.05", "1.03", "102%"] },
+            { label: "ARI Index", data: ["1.12", "1.08", "1.10", "1.05", "1.11", "1.10", "1.09", "103%"] },
+            { label: "RGI Index", data: ["1.18", "1.10", "1.15", "1.07", "1.17", "1.16", "1.12", "105%"] },
+            { cat: "F&B Department", type: "h" },
+            { label: "Outlet Revenue", data: ["3.1B", "2.8B", "3.0B", "2.7B", "3.2B", "3.0B", "2.9B", "107%"] },
+            { label: "Banquet Revenue", data: ["1.1B", "1.3B", "1.2B", "1.4B", "1.1B", "1.2B", "1.2B", "92%"] },
+            { cat: "OOD & Overall", type: "h" },
+            { label: "OOD Revenue", data: ["500M", "450M", "480M", "420M", "510M", "500M", "490M", "102%"] },
+            { label: "Total Revenue", data: ["12.4B", "11.2B", "12.2B", "11.1B", "12.4B", "12.1B", "11.9B", "104%"] },
+            { label: "Forecast Accuracy", data: ["96.5%", "94.2%", "96.0%", "93.1%", "97.0%", "96.5%", "95.0%", "98%"] }
         ];
 
         function toggleView(view) {
-            const cons = document.getElementById('view-consolidated');
-            const ind = document.getElementById('view-individual');
-            const btnCons = document.getElementById('btn-cons');
-            const btnInd = document.getElementById('btn-ind');
-
-            if(view === 'consolidated') {
-                cons.classList.remove('hidden');
-                ind.classList.add('hidden');
-                btnCons.className = "px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-blue-600 shadow-sm";
-                btnInd.className = "px-6 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-800";
-            } else {
-                cons.classList.add('hidden');
-                ind.classList.remove('hidden');
-                btnInd.className = "px-6 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-blue-600 shadow-sm";
-                btnCons.className = "px-6 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-800";
-            }
+            const isCons = view === 'consolidated';
+            document.getElementById('view-consolidated').classList.toggle('hidden', !isCons);
+            document.getElementById('view-individual').classList.toggle('hidden', isCons);
+            
+            document.getElementById('btn-cons').className = isCons ? "px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 shadow-sm transition" : "px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 transition";
+            document.getElementById('btn-ind').className = !isCons ? "px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 shadow-sm transition" : "px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 transition";
         }
 
-        function renderRankings() {
-            const container = document.getElementById('ranking-table');
-            container.innerHTML = hotelList.map((h, i) => `
+        function openHotel(name, grade) {
+            document.getElementById('active-hotel-name').innerText = name;
+            const el = document.getElementById('active-hotel-grade');
+            el.innerText = `Grade ${grade}`;
+            el.className = `grade-pill grade-${grade} text-sm px-6 py-2 ml-auto shadow-sm`;
+            toggleView('individual');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function init() {
+            // Group View
+            document.getElementById('ranking-body').innerHTML = hotels.map((h, i) => `
                 <tr class="cursor-pointer transition hover:scale-[1.002]" onclick="openHotel('${h.name}', '${h.grade}')">
-                    <td class="p-6 pl-10 font-medium text-slate-400">#${i + 1}</td>
-                    <td class="p-6 font-bold text-slate-700">${h.name}</td>
-                    <td class="p-6 text-slate-500">${h.occ}</td>
-                    <td class="p-6 text-slate-500">${h.adr}</td>
-                    <td class="p-6 text-slate-500">${h.revpar}</td>
-                    <td class="p-6 font-semibold text-slate-800">${h.rev}</td>
-                    <td class="p-6 text-center font-bold text-blue-500">${h.score}</td>
-                    <td class="p-6 text-center"><span class="grade-pill grade-${h.grade}">${h.grade}</span></td>
-                    <td class="p-6 pr-10 text-right"><span class="text-blue-400 font-bold">→</span></td>
+                    <td class="p-6 pl-10 sticky-col font-bold text-slate-700">
+                        <span class="text-slate-300 font-black mr-3">#${i+1}</span> ${h.name}
+                    </td>
+                    <td class="p-6 text-center text-slate-500">${h.occ}</td>
+                    <td class="p-6 text-center text-slate-500">${h.adr}</td>
+                    <td class="p-6 text-center text-slate-500">${h.rvp}</td>
+                    <td class="p-6 text-center font-bold text-slate-800">${h.rev}</td>
+                    <td class="p-6 text-center text-blue-500 font-bold">${h.rgi}</td>
+                    <td class="p-6 text-center font-extrabold text-blue-600">${h.score}</td>
+                    <td class="p-6 text-center pr-10">
+                        <span class="grade-pill grade-${h.grade}">${h.grade}</span>
+                    </td>
                 </tr>
             `).join('');
-        }
 
-        function renderScorecard() {
-            const container = document.getElementById('scorecard-content');
-            container.innerHTML = metricsData.map(m => {
-                if(m.type === 'head') {
-                    return `<tr><td colspan="9" class="p-4 pl-8 bg-slate-50/40 text-[10px] font-black text-slate-400 tracking-[0.2em] sticky-col">${m.category}</td></tr>`;
-                }
+            // Individual View
+            document.getElementById('scorecard-body').innerHTML = metrics.map(m => {
+                if(m.type === 'h') return `<tr><td colspan="9" class="p-3 pl-10 bg-slate-50/50 text-[9px] font-black text-slate-400 tracking-[0.2em] sticky-col uppercase">${m.cat}</td></tr>`;
                 return `
                     <tr>
-                        <td class="p-5 pl-8 font-bold text-slate-700 sticky-col">${m.label}</td>
-                        ${m.vals.map((v, idx) => `
-                            <td class="p-5 text-center ${idx === 6 ? 'bg-blue-50/30 font-bold text-blue-600' : 'text-slate-500'} ${idx === 7 ? 'text-right pr-10 font-bold text-slate-900' : ''}">
+                        <td class="p-5 pl-10 sticky-col font-bold text-slate-700">${m.label}</td>
+                        ${m.data.map((v, i) => `
+                            <td class="p-5 text-center ${i === 6 ? 'bg-blue-50/30 font-bold text-blue-600 border-x border-blue-100/30' : 'text-slate-500'} ${i === 7 ? 'font-bold text-slate-800 pr-10 text-right' : ''}">
                                 ${v}
                             </td>
                         `).join('')}
@@ -242,16 +269,7 @@
             }).join('');
         }
 
-        function openHotel(name, grade) {
-            document.getElementById('active-hotel-name').innerText = name;
-            const gradeEl = document.getElementById('active-hotel-grade');
-            gradeEl.innerText = `Grade ${grade}`;
-            gradeEl.className = `grade-pill grade-${grade} text-base px-5 py-1.5`;
-            toggleView('individual');
-        }
-
-        renderRankings();
-        renderScorecard();
+        init();
     </script>
 </body>
 </html>
